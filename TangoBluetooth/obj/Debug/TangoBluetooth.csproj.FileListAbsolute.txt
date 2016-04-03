@@ -1,0 +1,9 @@
+D:\Dev\spike\palsspike\TangoBluetooth\bin\Debug\TangoBluetooth.exe.config
+D:\Dev\spike\palsspike\TangoBluetooth\bin\Debug\TangoBluetooth.exe
+D:\Dev\spike\palsspike\TangoBluetooth\bin\Debug\TangoBluetooth.pdb
+D:\Dev\spike\palsspike\TangoBluetooth\obj\Debug\TangoBluetooth.csprojResolveAssemblyReference.cache
+D:\Dev\spike\palsspike\TangoBluetooth\obj\Debug\TangoBluetooth.exe
+D:\Dev\spike\palsspike\TangoBluetooth\obj\Debug\TangoBluetooth.pdb
+D:\Dev\spike\TangoBluetooth\bin\Debug\TangoBluetooth.exe.config
+D:\Dev\spike\TangoBluetooth\obj\Debug\TangoBluetooth.exe
+D:\Dev\spike\TangoBluetooth\obj\Debug\TangoBluetooth.pdb
