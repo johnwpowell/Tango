@@ -1,0 +1,49 @@
+device.on("impDataIn", function(data)
+{
+    try {
+        local STATION_ID = "KVAALDIE13";
+        local STATION_PW = "MyBu88yWU!"; 
+        local STATION_ALT = 1638;
+        local currentTime = date(time(), 'u');
+        local url = "http://rtupdate.wunderground.com/weatherstation/updateweatherstation.php?";
+        local jsonData = http.jsondecode(data);
+        
+        url += "ID=" + STATION_ID;
+        url += "&PASSWORD=" + STATION_PW;
+        url += "&dateutc=now";
+        url += "&tempf=" + jsonData.temperature;
+        url += "&humidity=" + jsonData.humidity;
+        url += "&winddir=" + jsonData.windDirection;
+        url += "&windspeedmph=" + jsonData.windSpeed;
+        url += "&baromin=" + convertToInHg(jsonData.pressure.tofloat(), STATION_ALT);
+        
+        server.log(data);
+        server.log(url);
+        local request = http.post(url, {}, "");
+        local response = request.sendsync();
+        server.log("Wunderground response = " + response.body);
+        device.send("impDataOut", "OK");
+    }
+    catch(error) {
+        server.error(error);
+        device.send("impDataOut", "ERROR");
+    }
+});
+
+function convertToInHg(pressure_Pa, stationAltitude)
+{
+    server.log(pressure_Pa);
+    local pressure_mb = pressure_Pa.tofloat() / 100; //pressure is now in millibars, 1 pascal = 0.01 millibars
+    
+    local part1 = pressure_mb - 0.3; //Part 1 of formula
+    local part2 = 8.42288 / 100000.0;
+    local part3 = math.pow((pressure_mb - 0.3), 0.190284);
+    local part4 = stationAltitude / part3;
+    local part5 = (1.0 + (part2 * part4));
+    local part6 = math.pow(part5, (1.0/0.190284));
+    local altimeter_setting_pressure_mb = part1 * part6; //Output is now in adjusted millibars
+    local baromin = altimeter_setting_pressure_mb * 0.02953;
+    //server.log(format("%s", baromin));
+    return(baromin);
+}
+

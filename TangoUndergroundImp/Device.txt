@@ -1,0 +1,84 @@
+local rxLEDToggle = 1;
+local txLEDToggle = 1;
+uart <- hardware.uart57;
+rxLed <- hardware.pin8;
+txLed <- hardware.pin9;
+data <- "";
+
+function initUart()
+{
+    hardware.configure(UART_57);    // Using UART on pins 5 and 7
+    uart.configure(57600, 8, PARITY_NONE, 1, NO_CTSRTS, serialRead);
+}
+
+function serialRead()
+{
+    local byte = uart.read();
+    if(byte == -1) {
+        return;
+    }
+    
+    if(byte == 13) {
+        toggleRxLED();  // toggle the RX LED indicator
+        agent.send("impDataIn", data);
+        data = "";
+        return;
+    }
+    
+    data = data + chr(byte);
+}
+
+// This data should be sent out the serial port
+agent.on("impDataOut", function(data)
+{
+    server.log(data);
+    toggleTxLED(); // Toggle the TX LED indicator
+    uart.write(data); // Write the data out the serial port.
+});
+
+function chr(asciiValue) {  
+     if (asciiValue < 32) return ""; 
+     return format("%c", asciiValue); 
+} 
+
+// initLEDs() simply initializes the LEDs, and turns them off. Remember that the
+// LEDs are active low (writing high turns them off).
+function initLEDs()
+{
+    // LEDs are on pins 8 and 9 on the imp Shield. Configure them as outputs,
+    //  and turn them off:
+    rxLed.configure(DIGITAL_OUT);
+    txLed.configure(DIGITAL_OUT);
+    rxLed.write(1);
+    txLed.write(1);
+}
+
+// This function turns an LED on/off quickly on pin 9.
+// It first turns the LED on, then calls itself again in 50ms to turn the LED off
+function toggleTxLED()
+{
+    txLEDToggle = txLEDToggle?0:1;    // toggle the txLEDtoggle variable
+    if (!txLEDToggle)
+    {
+        imp.wakeup(0.05, toggleTxLED.bindenv(this)); // if we're turning the LED on, set a timer to call this function again (to turn the LED off)
+    }
+    txLed.write(txLEDToggle);  // TX LED is on pin 8 (active-low)
+}
+
+// This function turns an LED on/off quickly on pin 8.
+// It first turns the LED on, then calls itself again in 50ms to turn the LED off
+function toggleRxLED()
+{
+    rxLEDToggle = rxLEDToggle?0:1;    // toggle the rxLEDtoggle variable
+    if (!rxLEDToggle)
+    {
+        imp.wakeup(0.05, toggleRxLED.bindenv(this)); // if we're turning the LED on, set a timer to call this function again (to turn the LED off)
+    }
+    rxLed.write(rxLEDToggle);   // RX LED is on pin 8 (active-low)
+}
+
+initLEDs();
+initUart();
+
+server.log("Online");
+
